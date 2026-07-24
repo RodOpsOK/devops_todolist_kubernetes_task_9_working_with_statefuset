@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Create the kind cluster
+kind create cluster --config .infrastructure/cluster.yml
 
 # Create namespace
 kubectl apply -f .infrastructure/namespace.yml
