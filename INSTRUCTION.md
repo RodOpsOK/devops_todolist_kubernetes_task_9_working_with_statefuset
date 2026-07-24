@@ -2,10 +2,26 @@
 
 ## Prerequisites
 
+- `kind` installed (https://kind.sigs.k8s.io/)
 - `kubectl` installed and configured
-- A running Kubernetes cluster
+- Docker running locally
 
-## 1. Deploy all resources
+## 1. Create the cluster
+
+Spin up a local Kubernetes cluster using `kind` and the provided
+configuration file:
+
+```bash
+kind create cluster --config cluster.yml
+```
+
+Verify the cluster is up:
+
+```bash
+kubectl cluster-info --context kind-kind
+```
+
+## 2. Deploy all resources
 
 Run the bootstrap script, which applies all manifests in the correct order:
 
@@ -14,7 +30,7 @@ chmod +x bootstrap.sh
 ./bootstrap.sh
 ```
 
-## 2. Validate the MySQL StatefulSet
+## 3. Validate the MySQL StatefulSet
 
 Check that all 3 MySQL pods are running:
 
@@ -47,7 +63,7 @@ kubectl run dns-test -n mysql --rm -it --image=busybox:1.28 --restart=Never -- \
   nslookup mysql-0.mysql.mysql.svc.cluster.local
 ```
 
-## 3. Validate secrets are correctly read by MySQL
+## 4. Validate secrets are correctly read by MySQL
 
 Connect to `mysql-0` and confirm the database, user, and privileges were
 initialized as expected:
@@ -63,7 +79,7 @@ You should see the `todolist` database in the output, confirming that
 applied correctly, and that `init.sql` (mounted from the ConfigMap into
 `/docker-entrypoint-initdb.d`) was executed.
 
-## 4. Validate liveness and readiness probes
+## 5. Validate liveness and readiness probes
 
 Describe a MySQL pod and confirm both probes are configured and passing:
 
@@ -74,7 +90,7 @@ kubectl describe pod mysql-0 -n mysql
 Look for the `Liveness` and `Readiness` sections, and confirm the pod's
 `Conditions` show `Ready: True`.
 
-## 5. Validate the app connects to `mysql-0`
+## 6. Validate the app connects to `mysql-0`
 
 Check that the app pods are running:
 
@@ -96,7 +112,7 @@ The `HOST` value should be `mysql-0.mysql.mysql.svc.cluster.local`,
 confirming the app is configured to connect specifically to the
 zero-indexed MySQL pod.
 
-## 6. Validate the app is working end to end
+## 7. Validate the app is working end to end
 
 Forward a local port to the app service:
 
@@ -107,3 +123,9 @@ kubectl port-forward -n todoapp service/todoapp-service 8000:80
 Open http://localhost:8000 in your browser, create a to-do item, and
 confirm it persists after refreshing the page — this validates that data
 is being written to and read from MySQL through the app.
+
+## Cleaning up
+
+```bash
+kind delete cluster
+```

@@ -62,8 +62,8 @@ spec:
             secretKeyRef:
               name: app-secret
               key: DB_HOST
-        - name: DB_NAME
-          value: 3306
+        - name: DB_PORT
+          value: "3306"
         - name: DB_NAME
           value: todolist
         - name: DB_ENGINE
